@@ -20,7 +20,7 @@ def load_files():
         model = pickle.load(f)
     return scaler, label_encoder, feature_encoders, model
 
-# Remark mapping
+# Expanded remark mapping
 remarks_dict = {
     'Urea': 'High Nitrogen fertilizer, good for leafy growth.',
     'DAP': 'High Phosphorus fertilizer, promotes root development.',
@@ -28,7 +28,14 @@ remarks_dict = {
     '28-28': 'Balanced fertilizer for overall growth.',
     '17-17-17': 'General-purpose fertilizer, suitable for most plants.',
     '20-20': 'Strong starter fertilizer, good for young plants.',
-    '10-26-26': 'High Phosphorus and Potassium fertilizer for maturity.'
+    '10-26-26': 'High Phosphorus and Potassium fertilizer for maturity.',
+    'General Purpose Fertilizer': 'Perfect for maintaining healthy plants throughout the season.',
+    'NPK 19-19-19': 'Well-balanced nutrients for strong growth and flowering.',
+    'Compost': 'Organic and eco-friendly fertilizer to improve soil health.',
+    'Vermicompost': 'Rich organic fertilizer produced from worm castings.',
+    'Cow Manure': 'Natural fertilizer enhancing soil fertility and structure.',
+    'Potash': 'Improves disease resistance and enhances fruit quality.',
+    'Superphosphate': 'Boosts strong root development and flowering.'
 }
 
 # Main function
@@ -71,7 +78,7 @@ def main():
             soil_encoded = 0
             crop_encoded = 0
 
-        # Create input array and add dummy values for missing 3 features
+        # Create input array and add dummy values for missing features
         input_data = np.array([[
             temperature, humidity, moisture,
             soil_encoded, crop_encoded,
@@ -89,7 +96,7 @@ def main():
         prediction = label_encoder.inverse_transform(prediction_encoded)[0]
 
         # Fetch remark
-        remark = remarks_dict.get(prediction, "No specific remark available.")
+        remark = remarks_dict.get(prediction, "🌱 Fertilizer recommended for healthy crop growth and balanced nutrition.")
 
         st.success(f"🌱 Recommended Fertilizer: **{prediction}**")
         st.info(f"💬 Remark: {remark}")
