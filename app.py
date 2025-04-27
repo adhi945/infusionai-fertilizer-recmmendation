@@ -35,21 +35,22 @@ remarks_dict = {
 def main():
     local_css("style.css")  # Apply custom styling
 
-    st.title("🌿 Fertilizer Recommendation System")
+    st.title("🌾 Fertilizer Recommendation System")
     st.write("Provide the details below to get the best fertilizer recommendation.")
 
-    # Load the models
+    # Load models and encoders
     scaler, label_encoder, feature_encoders, model = load_files()
 
     # Setup Soil and Crop Options
-    if 'Soil Type' in feature_encoders and 'Crop Type' in feature_encoders:
+    try:
         soil_options = feature_encoders['Soil Type'].classes_
         crop_options = feature_encoders['Crop Type'].classes_
-    else:
+    except Exception as e:
+        st.warning("⚠️ Using default Soil and Crop options due to missing encoders.")
         soil_options = ['Loamy', 'Sandy', 'Clayey', 'Black', 'Red', 'Alluvial']
         crop_options = ['Wheat', 'Rice', 'Sugarcane', 'Maize', 'Cotton', 'Barley']
 
-    # User inputs
+    # User Inputs
     temperature = st.number_input('Temperature (°C)', min_value=0.0, max_value=50.0, value=25.0)
     humidity = st.number_input('Humidity (%)', min_value=0.0, max_value=100.0, value=50.0)
     moisture = st.number_input('Moisture (%)', min_value=0.0, max_value=100.0, value=30.0)
@@ -67,15 +68,17 @@ def main():
             soil_encoded = feature_encoders['Soil Type'].transform([soil_type])[0]
             crop_encoded = feature_encoders['Crop Type'].transform([crop_type])[0]
         except:
-            # If no encoders available, assign dummy codes (not ideal, but prevents crash)
             soil_encoded = 0
             crop_encoded = 0
 
-        # Create input array
+        # Create input array and add dummy values for missing 3 features
         input_data = np.array([[
             temperature, humidity, moisture,
             soil_encoded, crop_encoded,
-            nitrogen, phosphorus, potassium
+            nitrogen, phosphorus, potassium,
+            6.5,   # Dummy pH value
+            200.0, # Dummy rainfall value
+            100.0  # Dummy elevation value
         ]])
 
         # Scale input
@@ -88,7 +91,7 @@ def main():
         # Fetch remark
         remark = remarks_dict.get(prediction, "No specific remark available.")
 
-        st.success(f"🌾 Recommended Fertilizer: **{prediction}**")
+        st.success(f"🌱 Recommended Fertilizer: **{prediction}**")
         st.info(f"💬 Remark: {remark}")
 
 if __name__ == '__main__':
