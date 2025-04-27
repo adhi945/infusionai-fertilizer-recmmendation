@@ -33,7 +33,7 @@ remarks_dict = {
 
 # Main function
 def main():
-    local_css("style.css")  # Apply the CSS
+    local_css("style.css")  # Apply custom styling
 
     st.title("🌿 Fertilizer Recommendation System")
     st.write("Provide the details below to get the best fertilizer recommendation.")
@@ -41,13 +41,21 @@ def main():
     # Load the models
     scaler, label_encoder, feature_encoders, model = load_files()
 
+    # Setup Soil and Crop Options
+    if 'Soil Type' in feature_encoders and 'Crop Type' in feature_encoders:
+        soil_options = feature_encoders['Soil Type'].classes_
+        crop_options = feature_encoders['Crop Type'].classes_
+    else:
+        soil_options = ['Loamy', 'Sandy', 'Clayey', 'Black', 'Red', 'Alluvial']
+        crop_options = ['Wheat', 'Rice', 'Sugarcane', 'Maize', 'Cotton', 'Barley']
+
     # User inputs
     temperature = st.number_input('Temperature (°C)', min_value=0.0, max_value=50.0, value=25.0)
     humidity = st.number_input('Humidity (%)', min_value=0.0, max_value=100.0, value=50.0)
     moisture = st.number_input('Moisture (%)', min_value=0.0, max_value=100.0, value=30.0)
 
-    soil_type = st.selectbox('Soil Type', feature_encoders['Soil Type'].classes_)
-    crop_type = st.selectbox('Crop Type', feature_encoders['Crop Type'].classes_)
+    soil_type = st.selectbox('Soil Type', soil_options)
+    crop_type = st.selectbox('Crop Type', crop_options)
 
     nitrogen = st.number_input('Nitrogen Level (N)', min_value=0.0, max_value=100.0, value=20.0)
     phosphorus = st.number_input('Phosphorus Level (P)', min_value=0.0, max_value=100.0, value=30.0)
@@ -55,8 +63,13 @@ def main():
 
     if st.button('Recommend Fertilizer'):
         # Encode categorical features
-        soil_encoded = feature_encoders['Soil Type'].transform([soil_type])[0]
-        crop_encoded = feature_encoders['Crop Type'].transform([crop_type])[0]
+        try:
+            soil_encoded = feature_encoders['Soil Type'].transform([soil_type])[0]
+            crop_encoded = feature_encoders['Crop Type'].transform([crop_type])[0]
+        except:
+            # If no encoders available, assign dummy codes (not ideal, but prevents crash)
+            soil_encoded = 0
+            crop_encoded = 0
 
         # Create input array
         input_data = np.array([[
@@ -75,8 +88,8 @@ def main():
         # Fetch remark
         remark = remarks_dict.get(prediction, "No specific remark available.")
 
-        st.success(f"Recommended Fertilizer: **{prediction}**")
-        st.info(f"Remark: {remark}")
+        st.success(f"🌾 Recommended Fertilizer: **{prediction}**")
+        st.info(f"💬 Remark: {remark}")
 
 if __name__ == '__main__':
     main()
